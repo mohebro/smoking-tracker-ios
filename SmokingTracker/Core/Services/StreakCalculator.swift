@@ -35,7 +35,7 @@ struct StreakCalculator {
     ///
     /// - Parameter entries: A collection of habit entries.
     /// - Returns: The number of consecutive successful days up to today.
-    static func currentStreak(entries: [HabitEntry]) -> Int {
+    func currentStreak(entries: [HabitEntry]) -> Int {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
 
@@ -67,7 +67,7 @@ struct StreakCalculator {
     ///
     /// - Parameter entries: A collection of habit entries.
     /// - Returns: The longest sequence of consecutive successful days.
-    static func longestStreak(entries: [HabitEntry]) -> Int {
+    func longestStreak(entries: [HabitEntry]) -> Int {
         let calendar = Calendar.current
         let successfulDays = normalizedSuccessfulDays(entries: entries)
             .sorted()
@@ -102,7 +102,7 @@ private extension StreakCalculator {
     ///
     /// - Parameter entries: A collection of habit entries.
     /// - Returns: A set of unique calendar days with successful entries.
-    static func normalizedSuccessfulDays(entries: [HabitEntry]) -> Set<Date> {
+    func normalizedSuccessfulDays(entries: [HabitEntry]) -> Set<Date> {
         let calendar = Calendar.current
 
         return Set(
