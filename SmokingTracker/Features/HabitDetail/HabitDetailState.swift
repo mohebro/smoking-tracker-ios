@@ -8,21 +8,15 @@
 import Foundation
 import Observation
 
-/// UI state for the Habit Detail screen.
+/// Holds the presentation state for `HabitDetailView`.
 ///
-/// `HabitDetailState` owns all state required to render and interact
-/// with the daily habit check-in screen. It is observed by SwiftUI
-/// views using the `@Observable` macro.
+/// This object:
+/// - Owns the selected `Habit`
+/// - Coordinates data access through `HabitEntryRepository`
+/// - Computes derived UI state such as streaks
 ///
-/// Responsibilities:
-/// - Hold the selected habit
-/// - Load today's habit entry
-/// - Expose the current streak value
-///
-/// This type contains no SwiftData-specific logic.
-/// Persistence operations are delegated to repositories,
-/// and business rules (e.g. streak calculation) are delegated
-/// to domain services.
+/// It does not manage persistence directly; that responsibility
+/// belongs to the repository.
 @Observable
 final class HabitDetailState {
 

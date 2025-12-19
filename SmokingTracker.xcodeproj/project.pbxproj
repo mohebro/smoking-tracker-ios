@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		82857B4A2EF4ADFD00D9D0DB /* HabitEntryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82857B492EF4ADFD00D9D0DB /* HabitEntryRepository.swift */; };
 		82857B4F2EF589AC00D9D0DB /* HabitDetailState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82857B4E2EF589AC00D9D0DB /* HabitDetailState.swift */; };
+		82857B522EF5C88F00D9D0DB /* HabitDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82857B512EF5C88F00D9D0DB /* HabitDetailView.swift */; };
+		82857B542EF5D82800D9D0DB /* HabitDetailBootstrapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82857B532EF5D82800D9D0DB /* HabitDetailBootstrapView.swift */; };
 		82E417602EF43438004F5782 /* SmokingTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82E4175F2EF43438004F5782 /* SmokingTrackerApp.swift */; };
 		82E417642EF4343A004F5782 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 82E417632EF4343A004F5782 /* Assets.xcassets */; };
 		82E417672EF4343A004F5782 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 82E417662EF4343A004F5782 /* Preview Assets.xcassets */; };
@@ -49,6 +51,8 @@
 /* Begin PBXFileReference section */
 		82857B492EF4ADFD00D9D0DB /* HabitEntryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitEntryRepository.swift; sourceTree = "<group>"; };
 		82857B4E2EF589AC00D9D0DB /* HabitDetailState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitDetailState.swift; sourceTree = "<group>"; };
+		82857B512EF5C88F00D9D0DB /* HabitDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitDetailView.swift; sourceTree = "<group>"; };
+		82857B532EF5D82800D9D0DB /* HabitDetailBootstrapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitDetailBootstrapView.swift; sourceTree = "<group>"; };
 		82E4175C2EF43438004F5782 /* SmokingTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmokingTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		82E4175F2EF43438004F5782 /* SmokingTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmokingTrackerApp.swift; sourceTree = "<group>"; };
 		82E417632EF4343A004F5782 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -108,6 +112,8 @@
 		82857B502EF5B4BA00D9D0DB /* HabitDetail */ = {
 			isa = PBXGroup;
 			children = (
+				82857B512EF5C88F00D9D0DB /* HabitDetailView.swift */,
+				82857B532EF5D82800D9D0DB /* HabitDetailBootstrapView.swift */,
 				82857B4E2EF589AC00D9D0DB /* HabitDetailState.swift */,
 			);
 			path = HabitDetail;
@@ -414,6 +420,8 @@
 				82E417942EF43709004F5782 /* StreakCalculator.swift in Sources */,
 				82E4179A2EF4376C004F5782 /* DashboardView.swift in Sources */,
 				82E417A42EF4381D004F5782 /* EntryListViewModel.swift in Sources */,
+				82857B522EF5C88F00D9D0DB /* HabitDetailView.swift in Sources */,
+				82857B542EF5D82800D9D0DB /* HabitDetailBootstrapView.swift in Sources */,
 				82E417982EF43723004F5782 /* SwiftDataStore.swift in Sources */,
 				82857B4A2EF4ADFD00D9D0DB /* HabitEntryRepository.swift in Sources */,
 				82E417602EF43438004F5782 /* SmokingTrackerApp.swift in Sources */,
