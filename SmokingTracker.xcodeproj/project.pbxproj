@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		82857B4A2EF4ADFD00D9D0DB /* HabitEntryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82857B492EF4ADFD00D9D0DB /* HabitEntryRepository.swift */; };
 		82E417602EF43438004F5782 /* SmokingTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82E4175F2EF43438004F5782 /* SmokingTrackerApp.swift */; };
 		82E417642EF4343A004F5782 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 82E417632EF4343A004F5782 /* Assets.xcassets */; };
 		82E417672EF4343A004F5782 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 82E417662EF4343A004F5782 /* Preview Assets.xcassets */; };
@@ -45,6 +46,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		82857B492EF4ADFD00D9D0DB /* HabitEntryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitEntryRepository.swift; sourceTree = "<group>"; };
 		82E4175C2EF43438004F5782 /* SmokingTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmokingTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		82E4175F2EF43438004F5782 /* SmokingTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmokingTrackerApp.swift; sourceTree = "<group>"; };
 		82E417632EF4343A004F5782 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -93,6 +95,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		82857B4B2EF4AE0200D9D0DB /* Repositories */ = {
+			isa = PBXGroup;
+			children = (
+				82857B492EF4ADFD00D9D0DB /* HabitEntryRepository.swift */,
+			);
+			path = Repositories;
+			sourceTree = "<group>";
+		};
 		82E417532EF43438004F5782 = {
 			isa = PBXGroup;
 			children = (
@@ -165,6 +175,7 @@
 				82E4178B2EF434CA004F5782 /* Models */,
 				82E4178C2EF434E9004F5782 /* Services */,
 				82E4178D2EF434FB004F5782 /* Persistence */,
+				82857B4B2EF4AE0200D9D0DB /* Repositories */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -393,6 +404,7 @@
 				82E4179A2EF4376C004F5782 /* DashboardView.swift in Sources */,
 				82E417A42EF4381D004F5782 /* EntryListViewModel.swift in Sources */,
 				82E417982EF43723004F5782 /* SwiftDataStore.swift in Sources */,
+				82857B4A2EF4ADFD00D9D0DB /* HabitEntryRepository.swift in Sources */,
 				82E417602EF43438004F5782 /* SmokingTrackerApp.swift in Sources */,
 				82E4179E2EF437AC004F5782 /* EntryDetailView.swift in Sources */,
 				82E417AD2EF438B0004F5782 /* Date+Extensions.swift in Sources */,
