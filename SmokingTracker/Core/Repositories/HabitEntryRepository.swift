@@ -19,6 +19,7 @@ import SwiftData
 /// - Navigates relationships (`habit.entries`) instead of querying
 ///   `HabitEntry` directly to avoid SwiftData predicate limitations
 /// - All public APIs are `async` to allow future persistence replacement
+@MainActor
 final class HabitEntryRepository {
 
     // MARK: - Dependencies
