@@ -28,7 +28,7 @@ struct HabitDetailView: View {
     /// update the UI whenever properties of `HabitDetailState`
     /// change, without manual state propagation.
     @Bindable
-    var state: HabitDetailViewModel
+    var viewModel: HabitDetailViewModel
 
     // MARK: - Body
 
@@ -36,12 +36,12 @@ struct HabitDetailView: View {
         VStack(spacing: 24) {
 
             // Habit name
-            Text(state.habit.name)
+            Text(viewModel.habit.name)
                 .font(.largeTitle)
                 .bold()
 
             // Current streak
-            Text("Current streak: \(state.currentStreak)")
+            Text("Current streak: \(viewModel.currentStreak)")
                 .font(.title2)
 
             Divider()
@@ -51,6 +51,26 @@ struct HabitDetailView: View {
 
             // User actions
             actionButtons
+                .disabled(viewModel.isLoading)
+            
+                .overlay {
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                    }
+                }
+                .alert(
+                    "Error",
+                    isPresented: .constant(viewModel.errorMessage != nil),
+                    actions: {
+                        Button("OK") {
+                            viewModel.errorMessage = nil
+                        }
+                    },
+                    message: {
+                        Text(viewModel.errorMessage ?? "")
+                    }
+                )
 
             Spacer()
         }
@@ -58,7 +78,7 @@ struct HabitDetailView: View {
         // Trigger asynchronous loading of today's entry
         // when the view appears.
         .task {
-            await state.load()
+            await viewModel.load()
         }
     }
 
@@ -68,9 +88,10 @@ struct HabitDetailView: View {
     ///
     /// - If an entry exists, shows whether today was a success or failure.
     /// - If no entry exists, indicates that the habit has not been logged yet.
+    @MainActor
     @ViewBuilder
     private var todayStatusView: some View {
-        if let todayEntry = state.todayEntry {
+        if let todayEntry = viewModel.todayEntry {
             Text(todayEntry.isSuccess ? "Today: Success" : "Today: Failure")
                 .font(.headline)
         } else {
@@ -87,35 +108,14 @@ struct HabitDetailView: View {
         VStack(spacing: 12) {
 
             Button("Mark as Success") {
-                markToday(success: true)
+                Task { await viewModel.markToday(success: true) }
             }
             .buttonStyle(.borderedProminent)
 
             Button("Mark as Failure") {
-                markToday(success: false)
+                Task { await viewModel.markToday(success: false) }
             }
             .buttonStyle(.bordered)
-        }
-    }
-
-    // MARK: - User Intents
-
-    /// Marks today's habit result as either success or failure.
-    ///
-    /// - Parameter success: `true` if the habit was avoided (negative habit),
-    ///                      `false` if the habit occurred.
-    ///
-    /// Errors are currently logged to the console.
-    /// This will be replaced with user-facing error handling
-    /// once alert presentation is introduced.
-    private func markToday(success: Bool) {
-        Task {
-            do {
-                try await state.markToday(success: success)
-            } catch {
-                // Temporary error handling
-                print("Failed to log habit entry:", error)
-            }
         }
     }
 }

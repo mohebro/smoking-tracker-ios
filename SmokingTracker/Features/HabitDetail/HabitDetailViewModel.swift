@@ -8,16 +8,9 @@
 import Foundation
 import Observation
 
-/// View model responsible for driving `HabitDetailView`.
-///
-/// `HabitDetailViewModel`:
-/// - Owns the selected `Habit`
-/// - Coordinates data access via `HabitEntryRepository`
-/// - Computes derived presentation state such as streaks
-///
-/// This type contains **presentation logic only**.
-/// Persistence concerns are delegated to repositories, keeping
-/// responsibilities well-separated and testable.
+/// ViewModel responsible for the business logic and presentation state
+/// of the habit detail screen.
+@MainActor
 @Observable
 final class HabitDetailViewModel {
 
@@ -39,7 +32,13 @@ final class HabitDetailViewModel {
     /// the number of consecutive days the user successfully avoided
     /// the habit.
     var currentStreak: Int = 0
-
+    
+    /// Indicates whether an async operation is in progress.
+    var isLoading: Bool = false
+    
+    /// User-visible error message, if any.
+    var errorMessage: String?
+    
     // MARK: - Dependencies
 
     /// Repository responsible for fetching and persisting habit entries.
@@ -78,6 +77,9 @@ final class HabitDetailViewModel {
     /// Intended to be called from a SwiftUI `.task {}` modifier.
     /// Runs on the main actor to safely update observable state.
     func load() async {
+        isLoading = true
+        defer { isLoading = false }
+        
         do {
             todayEntry = try await entryRepository.fetchEntry(
                 for: habit,
@@ -88,10 +90,7 @@ final class HabitDetailViewModel {
                 entries: habit.entries
             )
         } catch {
-            // Temporary error handling.
-            // Failures are logged but not surfaced to the UI yet.
-            // This will be replaced with user-facing error handling later.
-            print("Failed to load habit detail view model:", error)
+            errorMessage = "Failed to load habit data."
         }
     }
 
@@ -104,13 +103,22 @@ final class HabitDetailViewModel {
     ///
     /// After persisting the entry, the view model reloads its state
     /// to keep derived values (e.g. streak) consistent.
-    func markToday(success: Bool) async throws {
-        try await entryRepository.upsertEntry(
-            for: habit,
-            date: Date(),
-            isSuccess: success
-        )
-
-        await load()
+    func markToday(success: Bool) async {
+        guard !isLoading else { return }
+        
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            try await entryRepository.upsertEntry(
+                for: habit,
+                date: Date(),
+                isSuccess: success
+            )
+            
+            await load()
+        } catch {
+            errorMessage = "Failed to save today’s entry."
+        }
     }
 }

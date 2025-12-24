@@ -43,7 +43,7 @@ struct HabitDetailBootstrapView: View {
                 )
 
                 HabitDetailView(
-                    state: HabitDetailViewModel(
+                    viewModel: HabitDetailViewModel(
                         habit: habit,
                         entryRepository: entryRepository
                     )
