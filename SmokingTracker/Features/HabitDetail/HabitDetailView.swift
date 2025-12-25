@@ -7,115 +7,170 @@
 
 import SwiftUI
 
-/// Displays the details of a single habit.
+/// Displays the details of a single habit, including:
+/// - Habit name
+/// - Current streak
+/// - Today's logging status
+/// - Editing controls for success / failure
 ///
-/// This view is responsible for presenting:
-/// - The habit name
-/// - The current streak length
-/// - Today's habit entry status (success / failure / not logged)
-/// - User actions to mark today's habit outcome
+/// This view is intentionally lightweight:
+/// - All business logic lives in `HabitDetailViewModel`
+/// - The view reacts purely to observable state changes
 ///
-/// The view itself contains no business logic.
-/// All state mutations and data loading are delegated to
-/// the injected `HabitDetailState`, following MVVM principles.
+/// The view supports:
+/// - Viewing today's logged result
+/// - Entering an edit mode to modify today's entry
+/// - Creating a new entry when none exists
 struct HabitDetailView: View {
-
+    
     // MARK: - State
-
-    /// Bindable observable state for this view.
+    
+    /// Observable ViewModel driving the screen.
     ///
-    /// Using `@Bindable` allows SwiftUI to automatically
-    /// update the UI whenever properties of `HabitDetailState`
-    /// change, without manual state propagation.
-    @Bindable
-    var viewModel: HabitDetailViewModel
-
+    /// This ViewModel owns all business logic, async work,
+    /// and state transitions for the habit detail flow.
+    @Bindable var viewModel: HabitDetailViewModel
+    
     // MARK: - Body
-
+    
     var body: some View {
         VStack(spacing: 24) {
-
-            // Habit name
-            Text(viewModel.habit.name)
-                .font(.largeTitle)
-                .bold()
-
-            // Current streak
-            Text("Current streak: \(viewModel.currentStreak)")
-                .font(.title2)
-
-            Divider()
-
-            // Today's status
-            todayStatusView
-
-            // User actions
-            actionButtons
-                .disabled(viewModel.isLoading)
             
-                .overlay {
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                    }
-                }
-                .alert(
-                    "Error",
-                    isPresented: .constant(viewModel.errorMessage != nil),
-                    actions: {
-                        Button("OK") {
-                            viewModel.errorMessage = nil
-                        }
-                    },
-                    message: {
-                        Text(viewModel.errorMessage ?? "")
-                    }
-                )
-
+            streakSection(streak: viewModel.currentStreak)
+            
+            Divider()
+            
+            // Today's status section (view or edit)
+            todaySection(
+                todayEntry: viewModel.todayEntry,
+                isEditing: viewModel.isEditing,
+                draftAction: $viewModel.draftAction
+            )
+            
+            // Submit button appears only when required
+            if viewModel.showSubmitButton {
+                submitButton(isLoading: viewModel.isLoading)
+            }
+            
             Spacer()
         }
         .padding()
-        // Trigger asynchronous loading of today's entry
-        // when the view appears.
+        .navigationTitle(viewModel.habit.name)
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            toolbarContent(
+                todayEntry: viewModel.todayEntry,
+                isEditing: viewModel.isEditing
+            )
+        }
+        .alert(
+            "Error",
+            isPresented: .constant(viewModel.errorMessage != nil),
+            actions: {
+                Button("OK") {
+                    viewModel.errorMessage = nil
+                }
+            },
+            message: {
+                Text(viewModel.errorMessage ?? "")
+            }
+        )
+        // Triggers asynchronous loading of today's entry
+        // when the view first appears.
         .task {
             await viewModel.load()
         }
     }
-
-    // MARK: - Subviews
-
-    /// Displays today's habit entry status.
+    
+    // MARK: - Sections
+    
+    /// Primary action button used to submit a new entry
+    /// or upsert an edited entry.
     ///
-    /// - If an entry exists, shows whether today was a success or failure.
-    /// - If no entry exists, indicates that the habit has not been logged yet.
-    @MainActor
-    @ViewBuilder
-    private var todayStatusView: some View {
-        if let todayEntry = viewModel.todayEntry {
-            Text(todayEntry.isSuccess ? "Today: Success" : "Today: Failure")
-                .font(.headline)
-        } else {
-            Text("No entry for today")
-                .foregroundColor(.secondary)
+    /// - Parameter isLoading: Indicates whether a submission
+    ///   is currently in progress.
+    private func submitButton(isLoading: Bool) -> some View {
+        Button("Submit")  {
+            Task {
+                await viewModel.submitDraft()
+            }
+        }
+        .buttonStyle(.borderedProminent)
+        .disabled(isLoading)
+        .overlay {
+            if isLoading {
+                ProgressView()
+                    .scaleEffect(1.5)
+            }
         }
     }
-
-    /// Action buttons allowing the user to mark today's habit result.
+    
+    /// Displays the user's current streak for this habit.
     ///
-    /// These buttons translate user intent into calls on `HabitDetailState`.
-    /// Any persistence or validation errors are handled asynchronously.
-    private var actionButtons: some View {
-        VStack(spacing: 12) {
-
-            Button("Mark as Success") {
-                Task { await viewModel.markToday(success: true) }
+    /// - Parameter streak: Number of consecutive successful days.
+    private func streakSection(streak: Int) -> some View {
+        Text("Current streak: \(streak)")
+            .font(.title2)
+    }
+    
+    /// Displays today's habit entry state.
+    ///
+    /// Behavior:
+    /// - If an entry exists and the user is not editing,
+    ///   the result is shown as read-only text.
+    /// - If editing or no entry exists,
+    ///   a segmented picker is shown to select success or failure.
+    ///
+    /// - Parameters:
+    ///   - todayEntry: Optional entry for today.
+    ///   - isEditing: Whether the view is currently in edit mode.
+    ///   - draftAction: Binding to the draft action state.
+    private func todaySection(
+        todayEntry: HabitEntry?,
+        isEditing: Bool,
+        draftAction: Binding<HabitAction>
+    ) -> some View {
+        VStack(spacing: 16) {
+            if let entry = todayEntry, !isEditing {
+                Text(entry.isSuccess ? "Today: Success" : "Today: Failure")
+                    .font(.headline)
+            } else {
+                Picker("Today", selection: draftAction) {
+                    Text("Success").tag(HabitAction.success)
+                    Text("Failure").tag(HabitAction.failure)
+                }
+                .pickerStyle(.segmented)
             }
-            .buttonStyle(.borderedProminent)
-
-            Button("Mark as Failure") {
-                Task { await viewModel.markToday(success: false) }
+        }
+    }
+    
+    // MARK: - Toolbar
+    
+    /// Navigation bar toolbar content.
+    ///
+    /// Displays an Edit / Cancel button when
+    /// a habit entry already exists for today.
+    ///
+    /// - Parameters:
+    ///   - todayEntry: Optional entry for today.
+    ///   - isEditing: Whether the view is currently in edit mode.
+    @ToolbarContentBuilder
+    private func toolbarContent(
+        todayEntry: HabitEntry?,
+        isEditing: Bool
+    ) -> some ToolbarContent {
+        if todayEntry != nil {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(isEditing ? "Cancel" : "Edit") {
+                    Task {
+                        await if isEditing {
+                            viewModel.cancelEditing()
+                        } else {
+                            viewModel.beginEditing()
+                        }
+                    }
+                }
             }
-            .buttonStyle(.bordered)
         }
     }
 }

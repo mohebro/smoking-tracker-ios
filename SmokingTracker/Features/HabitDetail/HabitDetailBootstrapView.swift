@@ -34,30 +34,32 @@ struct HabitDetailBootstrapView: View {
     private var habit: Habit?
 
     var body: some View {
-        Group {
-            if let habit {
-                // Dependency construction is intentionally kept here,
-                // making this view the composition root.
-                let entryRepository = HabitEntryRepository(
-                    context: modelContext
-                )
-
-                HabitDetailView(
-                    viewModel: HabitDetailViewModel(
-                        habit: habit,
-                        entryRepository: entryRepository
+        NavigationStack {
+            Group {
+                if let habit {
+                    // Dependency construction is intentionally kept here,
+                    // making this view the composition root.
+                    let entryRepository = HabitEntryRepository(
+                        context: modelContext
                     )
-                )
-            } else {
-                ProgressView()
-                    .progressViewStyle(
-                        CircularProgressViewStyle(tint: .blue)
+                    
+                    HabitDetailView(
+                        viewModel: HabitDetailViewModel(
+                            habit: habit,
+                            entryRepository: entryRepository
+                        )
                     )
-                    .scaleEffect(2.0)
+                } else {
+                    ProgressView()
+                        .progressViewStyle(
+                            CircularProgressViewStyle(tint: .blue)
+                        )
+                        .scaleEffect(2.0)
+                }
             }
-        }
-        .task {
-            await bootstrapHabitIfNeeded()
+            .task {
+                await bootstrapHabitIfNeeded()
+            }
         }
     }
 

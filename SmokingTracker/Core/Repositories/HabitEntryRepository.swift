@@ -10,20 +10,14 @@ import SwiftData
 
 /// Repository responsible for managing `HabitEntry` persistence.
 ///
-/// This repository encapsulates all read/write operations related to
-/// habit entries and hides SwiftData-specific details from the rest
-/// of the application.
-///
-/// Design decisions:
-/// - Uses SwiftData as the persistence layer
-/// - Navigates relationships (`habit.entries`) instead of querying
-///   `HabitEntry` directly to avoid SwiftData predicate limitations
-/// - All public APIs are `async` to allow future persistence replacement
-@MainActor
+/// - Encapsulates SwiftData interactions
+/// - Enforces one-entry-per-day invariant
+/// - Exposes async APIs for future persistence replacement
 final class HabitEntryRepository {
 
     // MARK: - Dependencies
 
+    @MainActor
     private let context: ModelContext
     private let calendar: Calendar
 
@@ -60,29 +54,29 @@ final class HabitEntryRepository {
         note: String? = nil
     ) async throws {
 
-        let startOfDay = calendar.startOfDay(for: date)
-        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+        try await MainActor.run {
+            let startOfDay = calendar.startOfDay(for: date)
+            let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
 
-        if let existingEntry = habit.entries.first(where: {
-            $0.date >= startOfDay && $0.date < endOfDay
-        }) {
-            // Update existing entry
-            existingEntry.isSuccess = isSuccess
-            existingEntry.cravingLevel = cravingLevel
-            existingEntry.note = note
-        } else {
-            // Create new entry
-            let entry = HabitEntry(
-                date: date,
-                isSuccess: isSuccess,
-                cravingLevel: cravingLevel,
-                note: note,
-                habit: habit
-            )
-            habit.entries.append(entry)
+            if let existingEntry = habit.entries.first(where: {
+                $0.date >= startOfDay && $0.date < endOfDay
+            }) {
+                existingEntry.isSuccess = isSuccess
+                existingEntry.cravingLevel = cravingLevel
+                existingEntry.note = note
+            } else {
+                let entry = HabitEntry(
+                    date: date,
+                    isSuccess: isSuccess,
+                    cravingLevel: cravingLevel,
+                    note: note,
+                    habit: habit
+                )
+                habit.entries.append(entry)
+            }
+
+            try context.save()
         }
-
-        try context.save()
     }
 
     /// Fetches all entries for a habit, optionally filtered by date range.
@@ -99,17 +93,19 @@ final class HabitEntryRepository {
         to endDate: Date? = nil
     ) async throws -> [HabitEntry] {
 
-        var entries = habit.entries
+        await MainActor.run {
+            var entries = habit.entries
 
-        if let startDate {
-            entries = entries.filter { $0.date >= startDate }
+            if let startDate {
+                entries = entries.filter { $0.date >= startDate }
+            }
+
+            if let endDate {
+                entries = entries.filter { $0.date <= endDate }
+            }
+
+            return entries.sorted { $0.date < $1.date }
         }
-
-        if let endDate {
-            entries = entries.filter { $0.date <= endDate }
-        }
-
-        return entries.sorted { $0.date < $1.date }
     }
 
     /// Fetches a single habit entry for a specific day, if it exists.
@@ -123,12 +119,14 @@ final class HabitEntryRepository {
         for habit: Habit,
         on date: Date
     ) async throws -> HabitEntry? {
+        
+        await MainActor.run {
+            let startOfDay = calendar.startOfDay(for: date)
+            let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
 
-        let startOfDay = calendar.startOfDay(for: date)
-        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
-
-        return habit.entries.first {
-            $0.date >= startOfDay && $0.date < endOfDay
+            return habit.entries.first {
+                $0.date >= startOfDay && $0.date < endOfDay
+            }
         }
     }
 }
